@@ -22,7 +22,7 @@ class Vertex(object):
         Parameters:
         vertex_obj (Vertex): An instance of Vertex to be stored as a neighbor.
         """
-        pass
+        self.__neighbors_dict[vertex_obj.__id] = vertex_obj
 
     def __str__(self):
         """Output the list of neighbors of this vertex."""
@@ -66,7 +66,9 @@ class Graph:
         Returns:
         Vertex: The new vertex object.
         """
-        pass
+        vertex = Vertex(vertex_id)
+        self.__vertex_dict[vertex_id] = vertex
+        return vertex
         
 
     def get_vertex(self, vertex_id):
@@ -85,7 +87,16 @@ class Graph:
         vertex_id1 (string): The unique identifier of the first vertex.
         vertex_id2 (string): The unique identifier of the second vertex.
         """
-        pass
+        if vertex_id1 not in self.__vertex_dict:
+            self.add_vertex(vertex_id1)
+
+        if vertex_id2 not in self.__vertex_dict:
+            self.add_vertex(vertex_id2)
+
+        self.__vertex_dict[vertex_id1].add_neighbor(self.__vertex_dict[vertex_id2])
+
+        if not self.__is_directed:
+            self.__vertex_dict[vertex_id2].add_neighbor(self.__vertex_dict[vertex_id1])
         
     def get_vertices(self):
         """
@@ -195,4 +206,31 @@ class Graph:
         Returns:
         list<string>: All vertex ids that are `target_distance` away from the start vertex
         """
-        pass
+        if not self.contains_id(start_id):
+            raise KeyError("Vertex not found")
+
+        visited = set()
+        n_away_vertices = []
+
+        queue = deque()
+        queue.append((start_id, 0))
+        visited.add(start_id)
+
+        while queue:
+            current_vertex_obj = queue.pop()
+
+            current_vertex_id = current_vertex_obj[0]
+            vertex_distance = current_vertex_obj[1]
+
+            if vertex_distance == target_distance:
+                n_away_vertices.append(current_vertex_id)
+
+            neighbors = self.get_vertex(current_vertex_id).get_neighbors()
+
+            for neighbor in neighbors:
+
+                if neighbor.get_id() not in visited:
+                    queue.append((neighbor.get_id(), vertex_distance + 1))
+                    visited.add(neighbor.get_id())
+
+        return n_away_vertices
