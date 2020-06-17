@@ -292,7 +292,40 @@ class Graph:
 
         return connected
 
+    def find_path_dfs_iter(self, start_id, target_id):
+        """
+        Use DFS with a stack to find a path from start_id to target_id.
+        """
 
+        if not self.contains_id(start_id) or not self.contains_id(target_id):
+            raise KeyError("One or both vertices are not in the graph!")
 
+        stack = deque()
+        stack.append(self.get_vertex(start_id))
+
+        path_to_target = {
+            start_id: [start_id]
+        }
+
+        while stack:
+            current_vertex_obj = stack.pop()
+            current_vertex_id = current_vertex_obj.get_id()
+
+            if current_vertex_id == target_id:
+                break
+
+            neighbors = current_vertex_obj.get_neighbors()
+            for neighbor in neighbors:
+                if neighbor.get_id() not in path_to_target:
+                    stack.append(neighbor)
+
+                    current_path = path_to_target[current_vertex_id]
+                    next_path = current_path + [neighbor.get_id()]
+                    path_to_target[neighbor.get_id()] = next_path
+
+        if target_id not in path_to_target:
+            return None
+
+        return path_to_target[target_id]
 
 
