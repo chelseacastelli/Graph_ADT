@@ -29,15 +29,15 @@ def read_graph_from_file(filename):
         else:
             raise ValueError('Invalid file format')
 
-    # TODO: Use the second line to add the vertices to the graph
-    for each in next(f).strip('\n').split(','):
-        graph.add_vertex(each)
+        # TODO: Use the second line to add the vertices to the graph
+        for each in next(f).strip('\n').split(','):
+            graph.add_vertex(each)
 
-    # TODO: Use the 3rd+ line to add the edges to the graph
-    for line in f:
-        graph.add_edge(line[1], line[3])
+        # TODO: Use the 3rd+ line to add the edges to the graph
+        for line in f:
+            graph.add_edge(line[1], line[3])
 
-    return graph
+        return graph
 
 
 
