@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../')
 
 import unittest
 from graphs.graph import Graph

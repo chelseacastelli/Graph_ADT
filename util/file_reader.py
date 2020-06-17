@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../')
 
 from graphs.graph import Graph
 
@@ -38,7 +36,6 @@ def read_graph_from_file(filename):
             graph.add_edge(line[1], line[3])
 
         return graph
-
 
 
 if __name__ == '__main__':

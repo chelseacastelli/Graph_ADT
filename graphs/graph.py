@@ -1,4 +1,5 @@
 from collections import deque
+from random import choice
 
 class Vertex(object):
     """
@@ -219,3 +220,79 @@ class Graph:
                     visited.add(neighbor.get_id())
 
         return n_away_vertices
+
+    def is_bipartite(self):
+        """
+        Return True if the graph is bipartite, and False otherwise.
+        """
+        queue = deque()
+        visited = {}
+
+        current_color = 0
+
+        current_vertex_id = choice(list(self.__vertex_dict.keys()))
+
+        queue.append(current_vertex_id)
+        visited[current_vertex_id] = current_color
+
+        while queue:
+            current_color ^= 1
+
+            current_vertex_id = queue.popleft()
+
+            neighbors = self.get_vertex(current_vertex_id).get_neighbors()
+
+            for neighbor in neighbors:
+                if neighbor.get_id() not in visited.keys():
+                    visited[neighbor.get_id()] = current_color
+
+                    queue.append(neighbor.get_id())
+                else:
+                    if visited[current_vertex_id] == visited[neighbor.get_id()]:
+                        return False
+
+        return True
+
+    def get_connected_components(self):
+        """
+        Return a list of all connected components, with each connected component represented as a list of vertex ids.
+        """
+        connected = []
+        visited = set()
+        queue = deque()
+        components = []
+
+        current_vertex_id = choice(list(self.__vertex_dict.keys()))
+        visited.add(current_vertex_id)
+        queue.append(current_vertex_id)
+
+        while queue:
+            current_vertex_id = queue.popleft()
+            components.append(current_vertex_id)
+
+            neighbors = self.get_vertex(current_vertex_id).get_neighbors()
+
+            for neighbor in neighbors:
+                if neighbor.get_id() not in visited:
+                    visited.add(neighbor.get_id())
+                    components.append(neighbor.get_id())
+
+            connected.append(components)
+            components = []
+
+            if len(visited) == len(list(self.__vertex_dict.keys())):
+                break
+
+            unvisited = [vertex for vertex in list(self.__vertex_dict.keys()) if vertex not in visited]
+
+            current_vertex_id = choice(unvisited)
+
+            visited.add(current_vertex_id)
+            queue.append(current_vertex_id)
+
+        return connected
+
+
+
+
+
