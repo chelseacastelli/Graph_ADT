@@ -125,11 +125,9 @@ class Graph:
         if not self.contains_id(start_id):
             raise KeyError("One or both vertices are not in the graph!")
 
-        # Keep a set to denote which vertices we've seen before
         seen = set()
         seen.add(start_id)
 
-        # Keep a queue so that we visit vertices in the appropriate order
         queue = deque()
         queue.append(self.get_vertex(start_id))
 
@@ -137,46 +135,38 @@ class Graph:
             current_vertex_obj = queue.pop()
             current_vertex_id = current_vertex_obj.get_id()
 
-            # Process current node
             print('Processing vertex {}'.format(current_vertex_id))
 
-            # Add its neighbors to the queue
             for neighbor in current_vertex_obj.get_neighbors():
                 if neighbor.get_id() not in seen:
                     seen.add(neighbor.get_id())
                     queue.append(neighbor)
 
-        return # everything has been processed
+        return
 
     def find_shortest_path(self, start_id, target_id):
         """
         Find and return the shortest path from start_id to target_id.
-
         Parameters:
         start_id (string): The id of the start vertex.
         target_id (string): The id of the target (end) vertex.
-
         Returns:
         list<string>: A list of all vertex ids in the shortest path, from start to end.
         """
         if not self.contains_id(start_id) or not self.contains_id(target_id):
             raise KeyError("One or both vertices are not in the graph!")
 
-        # vertex keys we've seen before and their paths from the start vertex
         vertex_id_to_path = {
-            start_id: [start_id] # only one thing in the path
+            start_id: [start_id]
         }
 
-        # queue of vertices to visit next
-        queue = deque() 
+        queue = deque()
         queue.append(self.get_vertex(start_id))
 
-        # while queue is not empty
         while queue:
-            current_vertex_obj = queue.pop() # vertex obj to visit next
+            current_vertex_obj = queue.popleft()
             current_vertex_id = current_vertex_obj.get_id()
 
-            # found target, can stop the loop early
             if current_vertex_id == target_id:
                 break
 
@@ -184,13 +174,11 @@ class Graph:
             for neighbor in neighbors:
                 if neighbor.get_id() not in vertex_id_to_path:
                     current_path = vertex_id_to_path[current_vertex_id]
-                    # extend the path by 1 vertex
                     next_path = current_path + [neighbor.get_id()]
                     vertex_id_to_path[neighbor.get_id()] = next_path
                     queue.append(neighbor)
-                    # print(vertex_id_to_path)
 
-        if target_id not in vertex_id_to_path: # path not found
+        if target_id not in vertex_id_to_path:
             return None
 
         return vertex_id_to_path[target_id]
@@ -198,11 +186,9 @@ class Graph:
     def find_vertices_n_away(self, start_id, target_distance):
         """
         Find and return all vertices n distance away.
-        
         Arguments:
         start_id (string): The id of the start vertex.
         target_distance (integer): The distance from the start vertex we are looking for
-
         Returns:
         list<string>: All vertex ids that are `target_distance` away from the start vertex
         """
@@ -217,7 +203,7 @@ class Graph:
         visited.add(start_id)
 
         while queue:
-            current_vertex_obj = queue.pop()
+            current_vertex_obj = queue.popleft()
 
             current_vertex_id = current_vertex_obj[0]
             vertex_distance = current_vertex_obj[1]
@@ -228,7 +214,6 @@ class Graph:
             neighbors = self.get_vertex(current_vertex_id).get_neighbors()
 
             for neighbor in neighbors:
-
                 if neighbor.get_id() not in visited:
                     queue.append((neighbor.get_id(), vertex_distance + 1))
                     visited.add(neighbor.get_id())
