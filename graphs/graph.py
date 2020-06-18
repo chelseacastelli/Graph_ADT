@@ -377,15 +377,29 @@ class Graph:
 
     def topological_sort(self):
         """
-        Return a valid ordering of vertices in a directed acyclic graph.
-        If the graph contains a cycle, throw a ValueError.
+        Return a valid ordering of vertices in a directed acyclic graph. If the graph contains a cycle, throw a ValueError.
         """
-        # TODO: Create a stack to hold the vertex ordering.
-        # TODO: For each unvisited vertex, execute a DFS from that vertex.
-        # TODO: On the way back up the recursion tree (that is, after visiting a
-        # vertex's neighbors), add the vertex to the stack.
-        # TODO: Reverse the contents of the stack and return it as a valid ordering.
-        pass
+
+        stack = []
+        visited = set()
+
+        if self.contains_cycle():
+            raise ValueError('Graph not DAG')
+
+        def dfs_top_sort(vertex):
+            visited.add(vertex.get_id())
+
+            for neighbor in vertex.get_neighbors():
+                if neighbor.get_id() not in visited:
+                    dfs_top_sort(neighbor)
+
+            stack.append(vertex.get_id())
+
+        for vertex in list(self.__vertex_dict.values()):
+            if vertex.get_id() not in visited:
+                dfs_top_sort(vertex)
+
+        return stack[::-1]
 
 
 
