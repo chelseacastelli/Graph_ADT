@@ -348,10 +348,32 @@ class Graph:
         dfs_traversal_recursive(start_vertex)
 
     def contains_cycle(self):
-        """
-        Return True if the directed graph contains a cycle, False otherwise.
-        """
-        pass
+
+        visited = set()
+        stack = set()
+
+        start_id = choice(list(self.__vertex_dict.keys()))
+
+        def dfs_cycle_check(vertex):
+            if vertex in visited:
+                return False
+
+            visited.add(vertex)
+            stack.add(vertex)
+
+            for neighbor in vertex.get_neighbors():
+                if neighbor in stack or dfs_cycle_check(neighbor):
+                    return True
+
+            stack.remove(vertex)
+            return False
+
+        stack.add(start_id)
+        start_vertex = self.get_vertex(start_id)
+
+        if dfs_cycle_check(start_vertex):
+            return True
+        return False
 
     def topological_sort(self):
         """
