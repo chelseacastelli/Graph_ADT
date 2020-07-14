@@ -1,54 +1,62 @@
-from graphs.graph import Graph, Vertex
+from graph import Graph, Vertex
 
 
 class WeightedVertex(Vertex):
+
     def __init__(self, vertex_id):
         """
-        Initialize a vertex and its neighbors.
-
+        Initialize a vertex and its neighbors dictionary.
         Parameters:
         vertex_id (string): A unique identifier to identify this vertex.
         """
         self.__id = vertex_id
-        self.__neighbors_dict = {} # id -> (obj, weight)
+        self.__neighbors_dict = {}  # id -> (obj, weight)
 
     def add_neighbor(self, vertex_obj, weight):
         """
-        Add a neighbor along a weighted edge by storing it in the neighbors dictionary.
-
+        Add a neighbor by storing it in the neighbors dictionary.
         Parameters:
         vertex_obj (Vertex): An instance of Vertex to be stored as a neighbor.
-        weight (int): The edge weight from self -> neighbor.
+        weight (number): The weight of this edge.
         """
-        # TODO: Implement this function.
         if vertex_obj.get_id() in self.__neighbors_dict.keys():
             return  # it's already a neighbor
 
         self.__neighbors_dict[vertex_obj.get_id()] = (vertex_obj, weight)
 
     def get_neighbors(self):
-        """Return the neighbors of this vertex as a list of neighbor ids."""
-        # TODO: Implement this function.
+        """Return the neighbors of this vertex."""
         return [neighbor for (neighbor, weight) in self.__neighbors_dict.values()]
 
     def get_neighbors_with_weights(self):
-        """Return the neighbors of this vertex as a list of tuples of (neighbor_id, weight)."""
-        # TODO: Implement this function.
+        """Return the neighbors of this vertex."""
         return list(self.__neighbors_dict.values())
+
+    def get_id(self):
+        """Return the id of this vertex."""
+        return self.__id
+
+    def __str__(self):
+        """Output the list of neighbors of this vertex."""
+        neighbor_ids = [neighbor.get_id() for neighbor in self.get_neighbors()]
+        return f'{self.__id} adjacent to {neighbor_ids}'
+
+    def __repr__(self):
+        """Output the list of neighbors of this vertex."""
+        neighbor_ids = [neighbor.get_id() for neighbor in self.get_neighbors()]
+        return f'{self.__id} adjacent to {neighbor_ids}'
 
 
 class WeightedGraph(Graph):
-
     INFINITY = float('inf')
 
     def __init__(self, is_directed=True):
         """
-        Initialize a weighted graph object with an empty vertex dictionary.
-
+        Initialize a graph object with an empty vertex dictionary.
         Parameters:
         is_directed (boolean): Whether the graph is directed (edges go in only one direction).
         """
-        self.__vertex_dict = {} # id -> object
+        self.__vertex_dict = {}
         self.__is_directed = is_directed
 
     def add_vertex(self, vertex_id):
@@ -57,26 +65,30 @@ class WeightedGraph(Graph):
 
         Parameters:
         vertex_id (string): The unique identifier for the new vertex.
-
         Returns:
         Vertex: The new vertex object.
         """
-        # TODO: Implement this function.
         if vertex_id in self.__vertex_dict.keys():
             return False  # it's already there
         vertex_obj = WeightedVertex(vertex_id)
         self.__vertex_dict[vertex_id] = vertex_obj
         return True
 
+    def get_vertex(self, vertex_id):
+        """Return the vertex if it exists."""
+        if vertex_id not in self.__vertex_dict.keys():
+            return None
+        vertex_obj = self.__vertex_dict[vertex_id]
+        return vertex_obj
+
     def add_edge(self, vertex_id1, vertex_id2, weight):
         """
         Add an edge from vertex with id `vertex_id1` to vertex with id `vertex_id2`.
-
         Parameters:
         vertex_id1 (string): The unique identifier of the first vertex.
         vertex_id2 (string): The unique identifier of the second vertex.
+        weight (number): The edge weight.
         """
-        # TODO: Implement this function.
         all_ids = self.__vertex_dict.keys()
         if vertex_id1 not in all_ids or vertex_id2 not in all_ids:
             return False
@@ -86,6 +98,19 @@ class WeightedGraph(Graph):
         if not self.__is_directed:
             vertex_obj2.add_neighbor(vertex_obj1, weight)
 
+    def get_vertices(self):
+        """Return all the vertices in the graph"""
+        return list(self.__vertex_dict.values())
+
+    def get_edges(self):
+        """Return all the edges in the graph"""
+        return list()
+
+    def __iter__(self):
+        """Iterate over the vertex objects in the graph, to use sytax:
+        for vertex in graph"""
+        return iter(self.__vertex_dict.values())
+
     def union(self, parent_map, vertex_id1, vertex_id2):
         """Combine vertex_id1 and vertex_id2 into the same group."""
         vertex1_root = self.find(parent_map, vertex_id1)
@@ -94,7 +119,7 @@ class WeightedGraph(Graph):
 
     def find(self, parent_map, vertex_id):
         """Get the root (or, group label) for vertex_id."""
-        if (parent_map[vertex_id] == vertex_id):
+        if parent_map[vertex_id] == vertex_id:
             return vertex_id
         return self.find(parent_map, parent_map[vertex_id])
 
@@ -103,6 +128,8 @@ class WeightedGraph(Graph):
         Use Kruskal's Algorithm to return a list of edges, as tuples of
         (start_id, dest_id, weight) in the graph's minimum spanning tree.
         """
+        # Create a list of all edges in the graph, sort them by weight
+        # from smallest to largest
         edges = []
         for vertex in self.get_vertices():
             # print(vertex.get_neighbors_with_weights())
@@ -138,7 +165,6 @@ class WeightedGraph(Graph):
         """
         Use Prim's Algorithm to return the total weight of all edges in the
         graph's spanning tree.
-
         Assume that the graph is connected.
         """
         total_mst_weight = 0
@@ -209,6 +235,35 @@ class WeightedGraph(Graph):
         # Return None if target vertex not found.
         return None
 
+    def floyd_warshall(self):
+        """
+        Return the All-Pairs-Shortest-Paths dictionary, containing the shortest
+        paths from each vertex to each other vertex.
+        """
+        # create a top-level dictionary to hold each vertex & map it to another
+        # dictionary
+        dist = dict()
+        all_vertex_ids = self.__vertex_dict.keys()
+        # set default values - either 0 (for v -> v) or infinity
+        for vertex1 in all_vertex_ids:
+            dist[vertex1] = dict()
+            for vertex2 in all_vertex_ids:
+                dist[vertex1][vertex2] = WeightedGraph.INFINITY
+            dist[vertex1][vertex1] = 0
+        # add all edge weights to the dictionary
+        all_vertex_objs = self.get_vertices()
+        for vertex in all_vertex_objs:
+            neighbors_with_weights = vertex.get_neighbors_with_weights()
+            for neighbor, weight in neighbors_with_weights:
+                dist[vertex.get_id()][neighbor.get_id()] = weight
+        # execute the algorithm - "relax" the distances using an intermediate vertex
+        for k in all_vertex_ids:
+            for i in all_vertex_ids:
+                for j in all_vertex_ids:
+                    dist[i][j] = min(dist[i][j], dist[i][k] + dist[k][j])
+        return dist
+
+
 if __name__ == "__main__":
     graph = WeightedGraph(is_directed=False)
 
@@ -222,19 +277,19 @@ if __name__ == "__main__":
     vertex_c = graph.add_vertex('H')
     vertex_c = graph.add_vertex('J')
 
-    graph.add_edge('A','B', 4)
-    graph.add_edge('A','C', 8)
-    graph.add_edge('B','C', 11)
-    graph.add_edge('B','D', 8)
-    graph.add_edge('C','F', 1)
-    graph.add_edge('C','E', 4)
-    graph.add_edge('D','E', 2)
-    graph.add_edge('D','G', 7)
-    graph.add_edge('D','H', 4)
-    graph.add_edge('E','F', 6)
-    graph.add_edge('F','H', 2)
-    graph.add_edge('G','H', 14)
-    graph.add_edge('G','J', 9)
-    graph.add_edge('H','J', 10)
+    graph.add_edge('A', 'B', 4)
+    graph.add_edge('A', 'C', 8)
+    graph.add_edge('B', 'C', 11)
+    graph.add_edge('B', 'D', 8)
+    graph.add_edge('C', 'F', 1)
+    graph.add_edge('C', 'E', 4)
+    graph.add_edge('D', 'E', 2)
+    graph.add_edge('D', 'G', 7)
+    graph.add_edge('D', 'H', 4)
+    graph.add_edge('E', 'F', 6)
+    graph.add_edge('F', 'H', 2)
+    graph.add_edge('G', 'H', 14)
+    graph.add_edge('G', 'J', 9)
+    graph.add_edge('H', 'J', 10)
 
     print(graph.find_shortest_path('A', 'J'))
